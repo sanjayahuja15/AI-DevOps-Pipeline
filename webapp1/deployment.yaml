@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-pipeline
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devops-pipeline
+  template:
+    metadata:
+      labels:
+        app: devops-pipeline
+    spec:
+      containers:
+      - name: devops-pipeline
+        image: sanjayahuja15/devops_pipeline:latest  # Replace with your actual Docker image name if available
+        ports:
+        - containerPort: 5000  # If your app runs on a different port, update this

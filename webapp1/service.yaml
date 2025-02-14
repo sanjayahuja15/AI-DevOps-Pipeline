@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-pipeline-service
+spec:
+  selector:
+    app: devops-pipeline
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000  # This should match the containerPort in deployment.yaml
+  type: NodePort
