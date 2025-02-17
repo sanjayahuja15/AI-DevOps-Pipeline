@@ -167,7 +167,7 @@ def run_pipeline():
     print("\n🚀 Starting DevOps Pipeline with AI-Powered Auto-Scaling...")
 
     # File Paths
-    requirements_file = "requirements.txt"
+    requirements_file = os.path.join(os.path.dirname(__file__), "requirements.txt")
     build_log = "logs/build_logs.txt"
     test_log = "logs/test_logs.txt"
     monitoring_log = "logs/monitoring_logs.txt"

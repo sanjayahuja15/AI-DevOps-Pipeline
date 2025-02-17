@@ -1,9 +1,11 @@
+import os
 import re
 
 def analyze_requirements(requirements_file):
     """
     Reads and analyzes the requirements file to extract dependencies and project needs.
     """
+    requirements_file = os.path.join(os.path.dirname(__file__),"../requirements.txt")
     try:
         with open(requirements_file, "r") as file:
             content = file.readlines()
@@ -38,10 +40,6 @@ def analyze_requirements(requirements_file):
             elif "tool" in line.lower():
                 tools.append(line.strip())
 
-        print("\nTasks:", tasks)
-        print("Features:", features)
-        print("Deadlines:", deadlines)
-        print("Suggested Tools and Workflows:", tools)
         print("\n=== Planning Agent Execution Complete ===")
 
     except FileNotFoundError:
