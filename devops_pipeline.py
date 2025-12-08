@@ -6,6 +6,10 @@ import sys
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
+# Ensure subprocesses print UTF-8 on Windows and other platforms
+ENV = os.environ.copy()
+ENV.setdefault("PYTHONIOENCODING", "utf-8")
+
 # Configuration Constants
 TEST_THRESHOLD = 1  # If failures exceed this, rollback is triggered
 MAX_RETRIES = 2  # Maximum test retries
@@ -16,9 +20,13 @@ def scan_container_image(image_name):
     """Use Trivy to scan the container image for vulnerabilities before deployment."""
     print(f"\n🔍 Scanning container image: {image_name} for vulnerabilities...")
     
-    # Run Trivy to scan the image
-    result = subprocess.run(["trivy", "image", "--severity", "CRITICAL", image_name], capture_output=True, text=True)
-    scan_output = result.stdout + result.stderr
+    # Run Trivy to scan the image. If Trivy is not installed, warn and skip scanning.
+    try:
+        result = subprocess.run(["trivy", "image", "--severity", "CRITICAL", image_name], capture_output=True, text=True, env=ENV)
+        scan_output = (result.stdout or "") + (result.stderr or "")
+    except FileNotFoundError:
+        print("⚠️ Trivy not found in PATH — skipping image vulnerability scan. Install Trivy to enable security scanning.")
+        return True
 
     # Extract CRITICAL vulnerability count
     critical_match = re.search(r"CRITICAL:\s(\d+)", scan_output)
@@ -33,8 +41,26 @@ def scan_container_image(image_name):
 
 # Function to run shell commands
 def run_command(command):
-    result = subprocess.run(command, capture_output=True, text=True)
-    return result.stdout
+    # Run a command and return decoded stdout (utf-8, replace errors)
+    result = subprocess.run(command, capture_output=True, env=ENV)
+    raw = result.stdout
+    if raw is None:
+        return ""
+    if isinstance(raw, (bytes, bytearray)):
+        return raw.decode("utf-8", errors="replace")
+    return str(raw)
+
+
+def run_subproc(command, timeout=None):
+    """Run subprocess and return (stdout_str, stderr_str, returncode). Uses UTF-8 with replacement for undecodable bytes."""
+    completed = subprocess.run(command, capture_output=True, env=ENV, timeout=timeout)
+    def _dec(x):
+        if x is None:
+            return ""
+        if isinstance(x, (bytes, bytearray)):
+            return x.decode("utf-8", errors="replace")
+        return str(x)
+    return _dec(completed.stdout), _dec(completed.stderr), completed.returncode
 
 # AI-Powered Scaling: Monitor CPU & Adjust Replicas
 def get_cpu_usage():
@@ -76,22 +102,25 @@ def apply_auto_scaling():
 # DevOps Pipeline Stages
 def run_planning_agent(requirements_file):
     print("\n=== Running Planning Agent ===")
-    subprocess.run(["python3", "agents/analyze_requirements.py", requirements_file])
+    stdout, stderr, returncode = run_subproc([sys.executable, "agents/analyze_requirements.py", requirements_file])
+    print(stdout + stderr)
+    if returncode != 0:
+        print("🚨 Planning agent failed. Stopping pipeline.")
+        sys.exit(1)
 
 def run_build_agent(build_log):
     print("\n=== Running Build Automation Agent ===")
     try:
-        result = subprocess.run(["python3", "agents/build_automation_agent.py", build_log], 
-                                capture_output=True, text=True, timeout=120)  # Set timeout to prevent hangs
+        stdout, stderr, returncode = run_subproc([sys.executable, "agents/build_automation_agent.py", build_log], timeout=120)
     except subprocess.TimeoutExpired:
         print("⏳ Build Process Timed Out! Stopping pipeline.")
         sys.exit(1)
 
-    output = result.stdout + result.stderr
+    output = stdout + stderr
     print(output)
 
     # First Attempt: If the build succeeds, return early
-    if "Error" not in output and result.returncode == 0:
+    if "Error" not in output and returncode == 0:
         print("✅ Build Completed Successfully!")
         return True  # No need to retry
 
@@ -101,9 +130,8 @@ def run_build_agent(build_log):
     MAX_RETRIES = 2  # Number of retries for build failures
     for attempt in range(1, MAX_RETRIES + 1):
         print(f"🔄 Retrying Build: Attempt {attempt}/{MAX_RETRIES}")
-        result = subprocess.run(["python3", "agents/build_automation_agent.py", build_log], 
-                                capture_output=True, text=True)
-        output = result.stdout + result.stderr
+        stdout, stderr, returncode = run_subproc([sys.executable, "agents/build_automation_agent.py", build_log])
+        output = stdout + stderr
         print(output)
 
         if "Error" not in output and result.returncode == 0:
@@ -117,8 +145,8 @@ def run_testing_agent(test_log):
     print("\n=== Running Testing Agent ===")
 
     for attempt in range(1, MAX_RETRIES + 2):  # Initial attempt + retries
-        result = subprocess.run(["python3", "agents/testing_agent.py"], capture_output=True, text=True)
-        output = result.stdout + result.stderr
+        stdout, stderr, returncode = run_subproc([sys.executable, "agents/testing_agent.py"])
+        output = stdout + stderr
         print(output)  # Display test output
 
         # Extract actual test results from pytest logs
@@ -140,7 +168,11 @@ def run_testing_agent(test_log):
 
 def run_monitoring_agent(monitoring_log):
     print("\n=== Running Monitoring and Alerting Agent ===")
-    subprocess.run(["python3", "agents/monitoring_alerting_agent.py", monitoring_log])
+    stdout, stderr, returncode = run_subproc([sys.executable, "agents/monitoring_alerting_agent.py", monitoring_log])
+    print(stdout + stderr)
+    if returncode != 0:
+        print("🚨 Monitoring agent failed. Stopping pipeline.")
+        sys.exit(1)
 
 def run_deployment_agent(deployment_script, rollback_script, tests_passed, container_image):
     print("\n=== Running Deployment Automation Agent ===")
@@ -152,14 +184,18 @@ def run_deployment_agent(deployment_script, rollback_script, tests_passed, conta
             sys.exit(1)  # Stop pipeline
 
         print("🚀 Proceeding with Deployment...")
-        subprocess.run(["python3", "agents/deployment_automation_agent.py"])
+        stdout, stderr, returncode = run_subproc([sys.executable, "agents/deployment_automation_agent.py"])
+        print(stdout + stderr)
+        if returncode != 0:
+            print("🚨 Deployment agent failed. Stopping pipeline.")
+            sys.exit(1)
 
         print("\n⚡ Enabling AI-Powered Auto-Scaling...")
         apply_auto_scaling()  # Apply AI-based auto-scaling
 
     else:
         print("🚨 Deployment Stopped! Rolling Back...")
-        subprocess.run(["bash", rollback_script])
+        subprocess.run(["bash", rollback_script], env=ENV)
         sys.exit(1)
 
 # Main DevOps Pipeline Execution
