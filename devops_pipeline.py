@@ -134,7 +134,7 @@ def run_build_agent(build_log):
         output = stdout + stderr
         print(output)
 
-        if "Error" not in output and result.returncode == 0:
+        if "Error" not in output and returncode == 0:
             print("✅ Build Successful after retry!")
             return True
 

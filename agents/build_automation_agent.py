@@ -67,7 +67,10 @@ def visualize_durations(durations):
 
     # Show the plot
     plt.legend()
-    plt.show()
+    # plt.show()  # Commented out for automated pipeline execution
+    # Save plot instead of showing it
+    plt.savefig('logs/build_duration_plot.png')
+    print("📊 Build duration plot saved to logs/build_duration_plot.png")
 
 # Main script logic
 if __name__ == "__main__":

@@ -10,7 +10,8 @@ def run_tests():
     print("\n=== Running Tests with Pytest ===")
 
     try:
-        result = subprocess.run(["pytest", "--tb=short", "--disable-warnings"],
+        # Use sys.executable to run pytest in the current Python environment
+        result = subprocess.run([sys.executable, "-m", "pytest", "--tb=short", "--disable-warnings"],
                                 capture_output=True, text=True)
         output = result.stdout + result.stderr
 
