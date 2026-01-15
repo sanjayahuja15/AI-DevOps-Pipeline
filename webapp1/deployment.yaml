@@ -13,7 +13,8 @@ spec:
         app: devops-pipeline
     spec:
       containers:
-      - name: devops-pipeline
-        image: sanjayahuja15/devops_pipeline:latest  # Replace with your actual Docker image name if available
+      - name: flask-webapp
+        image: flask-webapp1:latest
+        imagePullPolicy: Never  # Use local image, don't pull from registry
         ports:
-        - containerPort: 5000  # If your app runs on a different port, update this
+        - containerPort: 5000
