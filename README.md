@@ -103,11 +103,44 @@ Before running the pipeline, ensure you have the following tools installed:
    # Installation: https://developer.hashicorp.com/terraform/downloads
    ```
 
-6. **Prometheus & Grafana** - Monitoring and visualization
+6. **Prometheus & Grafana** - Monitoring and visualization ✅ DEPLOYED
    ```bash
-   # Deploy on Kubernetes:
-   kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/bundle.yaml
+   # Already deployed in this project!
+   # Access via port-forward:
+   kubectl port-forward -n monitoring svc/grafana 3001:3000
+   kubectl port-forward -n monitoring svc/prometheus 9091:9090
+   
+   # Then open: http://localhost:3001 (Grafana) and http://localhost:9091 (Prometheus)
+   # Default login: admin / admin123
    ```
+
+---
+
+## **🎯 Quick Start - Monitoring Stack**
+
+The project now includes **enterprise-grade monitoring** with Prometheus and Grafana!
+
+**Access the Dashboards:**
+```powershell
+# Grafana (login: admin/admin123)
+kubectl port-forward -n monitoring svc/grafana 3001:3000
+# Open: http://localhost:3001
+
+# Prometheus
+kubectl port-forward -n monitoring svc/prometheus 9091:9090
+# Open: http://localhost:9091
+
+# Flask App Metrics
+kubectl port-forward -n default deploy/devops-pipeline 5002:5000
+# Open: http://localhost:5002/metrics
+```
+
+**What You Get:**
+- ✅ Real-time Kubernetes cluster metrics
+- ✅ Flask application metrics (requests, latency, CPU, memory)
+- ✅ Custom AI-DevOps dashboards
+- ✅ Health and readiness monitoring
+- ✅ Automated metric scraping every 15 seconds
 
 ---
 
