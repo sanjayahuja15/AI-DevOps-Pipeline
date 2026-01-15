@@ -50,19 +50,114 @@ AI-DevOps-Pipeline/
 │── setup.py                # Package setup
 │── README.md               # Project documentation
 
-🚀 Getting Started
-1️⃣ Clone the Repository
+---
+
+## **🚀 Getting Started**
+
+### **📋 Prerequisites**
+
+Before running the pipeline, ensure you have the following tools installed:
+
+#### **Required Tools**
+1. **Python 3.12+** - Runtime for the pipeline and AI agents
+   ```bash
+   python --version  # Verify installation
+   ```
+
+2. **Docker** - Container runtime for building and running images
+   ```bash
+   docker --version
+   # Installation: https://docs.docker.com/get-docker/
+   ```
+
+3. **Kubernetes (kubectl & Minikube)** - Deployment orchestration
+   ```bash
+   kubectl version --client
+   minikube version
+   
+   # Install kubectl: https://kubernetes.io/docs/tasks/tools/
+   # Install Minikube: https://minikube.sigs.k8s.io/docs/start/
+   
+   # Start Minikube
+   minikube start
+   ```
+
+4. **Trivy** - Security vulnerability scanner
+   ```bash
+   trivy --version
+   
+   # Install on Windows (using Chocolatey):
+   choco install trivy
+   
+   # Install on macOS:
+   brew install aquasecurity/trivy/trivy
+   
+   # Install on Linux:
+   # See: https://aquasecurity.github.io/trivy/latest/getting-started/installation/
+   ```
+
+#### **Optional Tools (For Production)**
+5. **Terraform** - Infrastructure as Code (for cloud deployments)
+   ```bash
+   terraform --version
+   # Installation: https://developer.hashicorp.com/terraform/downloads
+   ```
+
+6. **Prometheus & Grafana** - Monitoring and visualization
+   ```bash
+   # Deploy on Kubernetes:
+   kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/bundle.yaml
+   ```
+
+---
+
+### **⚙️ Installation Steps**
+
+#### **1️⃣ Clone the Repository**
+```bash
 git clone https://github.com/sanjayahuja15/AI-DevOps-Pipeline.git
 cd AI-DevOps-Pipeline
-2️⃣ Set Up Virtual Environment
+```
+
+#### **2️⃣ Set Up Virtual Environment**
+```bash
 python3 -m venv venv
 source venv/bin/activate  # On Mac/Linux
 venv\Scripts\activate     # On Windows
-3️⃣ Install Dependencies
+```
+
+#### **3️⃣ Install Python Dependencies**
+```bash
 pip install -r requirements.txt
-4️⃣ Run the DevOps Pipeline
-python3 devops_pipeline.py
-🔍 Features
+```
+
+#### **4️⃣ Build Docker Image (Optional)**
+```bash
+docker build -t flask-webapp1:latest ./webapp1
+```
+
+#### **5️⃣ Deploy to Kubernetes (Optional)**
+```bash
+# Start Minikube if not running
+minikube start
+
+# Deploy the application
+kubectl apply -f webapp1/deployment.yaml
+kubectl apply -f webapp1/service.yaml
+
+# Verify deployment
+kubectl get pods
+kubectl get services
+```
+
+#### **6️⃣ Run the DevOps Pipeline**
+```bash
+python devops_pipeline.py
+```
+
+---
+
+## **🔍 Features**
 ✅ AI-Driven CI/CD Pipeline
 Automates build, test, deploy, and rollback processes.
 Uses GitHub Actions/Jenkins for CI/CD.
@@ -79,7 +174,86 @@ Automatic rollback on failure detection.
 Prometheus & Grafana track system health.
 Alerts are sent when CPU spikes or anomalies occur.
 
-📌 Roadmap to AWS Cloud Deployment
+---
+
+## **🛠️ Troubleshooting**
+
+### **Common Issues**
+
+#### **1. Trivy Not Found**
+If you see: `⚠️ Trivy not found in PATH — skipping image vulnerability scan`
+
+**Solution:**
+- The pipeline will continue without security scanning
+- Install Trivy to enable vulnerability scanning:
+  ```bash
+  # Windows (Chocolatey)
+  choco install trivy
+  
+  # macOS (Homebrew)
+  brew install aquasecurity/trivy/trivy
+  
+  # Linux (download binary)
+  wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_Linux-64bit.tar.gz
+  tar zxvf trivy_Linux-64bit.tar.gz
+  sudo mv trivy /usr/local/bin/
+  ```
+
+#### **2. Kubernetes/kubectl Not Found**
+If deployment commands fail:
+
+**Solution:**
+- The pipeline runs locally without Kubernetes
+- For full deployment features, install kubectl and Minikube:
+  ```bash
+  # Verify installation
+  kubectl version --client
+  minikube start
+  ```
+
+#### **3. Matplotlib Plots Not Saving**
+If you don't see plot files in `logs/`:
+
+**Solution:**
+- Ensure the `logs/` directory exists
+- Check write permissions
+- Plots are saved as:
+  - `logs/build_duration_plot.png`
+  - `logs/system_metrics_plot.png`
+
+#### **4. pytest Not Found in Virtual Environment**
+**Solution:**
+```bash
+# Activate virtual environment first
+source venv/bin/activate  # Mac/Linux
+venv\Scripts\activate     # Windows
+
+# Install pytest
+pip install pytest==9.0.2
+```
+
+---
+
+## **📌 Project Requirements & Tasks**
+
+### **Functional Requirements**
+- ✅ **Automated Error Logging** - All errors are logged to respective log files
+- ✅ **Error-Triggered Rollback** - Pipeline automatically rolls back on failures
+- ✅ **CLI Alerts** - Real-time alerts displayed in terminal during execution
+- ✅ **AI-Powered Decision Making** - ML models for scaling and anomaly detection
+
+### **Pipeline Components**
+1. **Planning Agent** - Analyzes dependencies and requirements
+2. **Build Agent** - Automates build with performance tracking
+3. **Testing Agent** - Runs pytest with retry logic
+4. **Monitoring Agent** - Tracks CPU, memory, disk with anomaly detection
+5. **Security Scanner** - Trivy scans for vulnerabilities
+6. **Deployment Agent** - Self-healing deployment with rollback
+7. **Auto-Scaling** - AI predicts optimal replica count
+
+---
+
+## **📌 Roadmap to AWS Cloud Deployment**
 We plan to migrate the AI-Powered DevOps Pipeline to AWS Free Tier for scalability and cost optimization. Below is the roadmap for transitioning from a local (Minikube) setup to AWS cloud infrastructure.
 
 🌟 Phase 1: Move to AWS CodePipeline
