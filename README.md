@@ -259,15 +259,19 @@ We plan to migrate the AI-Powered DevOps Pipeline to AWS Free Tier for scalabili
 🌟 Phase 1: Move to AWS CodePipeline
 Migrate GitHub repository to AWS CodeCommit.
 Set up AWS CodePipeline + AWS CodeBuild for CI/CD.
+
 🌟 Phase 2: Containerization with Amazon ECS
 Push Docker images to Amazon Elastic Container Registry (ECR).
 Deploy Flask web application on Amazon ECS with Fargate.
+
 🌟 Phase 3: Automated Security & Monitoring
 Enable Amazon Inspector for vulnerability scanning.
 Use AWS CloudWatch & AWS X-Ray for logs and monitoring.
+
 🌟 Phase 4: AI-Driven Auto-Scaling on AWS
 Replace Kubernetes HPA with AWS Auto Scaling.
 Use AWS Lambda for anomaly-based auto-scaling decisions.
+
 🌟 Phase 5: Enhance Security with AWS IAM & WAF
 Implement AWS IAM roles for access control.
 Protect endpoints with AWS Web Application Firewall (WAF).
